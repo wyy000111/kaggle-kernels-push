@@ -24,7 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      KERNEL_SLUG: yongyongwuvip/kaggle-t4-llamacpp-tunnel
+      KERNEL_SLUG: yongyongwuvip/gemma-4-26b-a4b-it-qat-ud-q4-k-xl-dat
+      MODEL_FILE: gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
       KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
       KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
       KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}

@@ -3,7 +3,8 @@
 # then record status, logs and optional output files.
 set -euo pipefail
 
-KERNEL_SLUG="${KERNEL_SLUG:-yongyongwuvip/kaggle-t4-llamacpp-tunnel}"
+KERNEL_SLUG="${KERNEL_SLUG:-yongyongwuvip/gemma-4-26b-a4b-it-qat-ud-q4-k-xl-dat}"
+MODEL_FILE="${MODEL_FILE:-gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf}"
 KAGGLE_ACCELERATOR="${KAGGLE_ACCELERATOR:-NvidiaTeslaT4}"
 KAGGLE_TIMEOUT="${KAGGLE_TIMEOUT:-3600}"
 STATUS_POLL_SECONDS="${STATUS_POLL_SECONDS:-180}"
@@ -17,6 +18,8 @@ WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 echo "==> Kernel: $KERNEL_SLUG"
+echo "==> Model: $MODEL_FILE"
+printf '%s\n' "$MODEL_FILE" > "$ARTIFACT_DIR/model.txt"
 echo "==> Pulling latest notebook source"
 kaggle kernels pull "$KERNEL_SLUG" -p "$WORK_DIR" -m
 
@@ -26,12 +29,12 @@ if [ -z "$META_FILE" ]; then
   exit 1
 fi
 
-python - "$META_FILE" "$KERNEL_SLUG" "$WORK_DIR" <<'PY'
+python - "$META_FILE" "$KERNEL_SLUG" "$WORK_DIR" "$MODEL_FILE" <<'PY'
 import json
 import os
 import sys
 
-meta_path, expected_id, work_dir = sys.argv[1:4]
+meta_path, expected_id, work_dir, model_file = sys.argv[1:5]
 with open(meta_path, encoding="utf-8") as fh:
     meta = json.load(fh)
 
@@ -47,6 +50,12 @@ if not code_file:
 code_path = os.path.join(work_dir, code_file)
 if not os.path.isfile(code_path):
     raise SystemExit(f"code_file not found after pull: {code_path}")
+if model_file:
+    with open(code_path, encoding="utf-8", errors="replace") as fh:
+        source = fh.read()
+    if model_file.lower() not in source.lower():
+        print(f"NOTE: '{model_file}' was not found in the pulled notebook source; "
+              "verify that the notebook actually loads this model.")
 print(f"Metadata OK: id={meta['id']} code_file={code_file}")
 PY
 

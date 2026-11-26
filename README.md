@@ -2,7 +2,8 @@
 
 定时向 Kaggle 推送目标 Notebook 的新版本，从而触发一次运行。
 
-- 目标：`https://www.kaggle.com/code/yongyongwuvip/kaggle-t4-llamacpp-tunnel`
+- 目标：`https://www.kaggle.com/code/yongyongwuvip/gemma-4-26b-a4b-it-qat-ud-q4-k-xl-dat`
+- 模型：`gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf`
 - 调度：北京时间周一至周五 09:00（GitHub cron 使用 UTC，对应 `0 1 * * 1-5`）
 - 原理：`kaggle kernels pull` 拉取最新代码 → `kaggle kernels push` 上传并触发执行 → 记录状态/日志/输出文件
 
@@ -39,7 +40,8 @@
 
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
-| `KERNEL_SLUG` | `yongyongwuvip/kaggle-t4-llamacpp-tunnel` | Kaggle Notebook 标识 |
+| `KERNEL_SLUG` | `yongyongwuvip/gemma-4-26b-a4b-it-qat-ud-q4-k-xl-dat` | Kaggle Notebook 标识 |
+| `MODEL_FILE` | `gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf` | 期望 Notebook 加载的 GGUF 模型文件；写入运行记录，并在拉取后做一致性提示 |
 | `KAGGLE_ACCELERATOR` | `NvidiaTeslaT4` | 加速器；改 CPU 时设为空字符串 |
 | `KAGGLE_TIMEOUT` | `3600` | 单次运行超时（秒） |
 | `STATUS_POLL_SECONDS` | `180` | 状态轮询窗口；隧道型 Notebook 常停留 `RUNNING`，属正常 |
@@ -63,4 +65,5 @@ bash scripts/rerun_kaggle_kernel.sh
 - 隧道类 Notebook 可能长时间 `RUNNING` 直至 Kaggle 会话上限；轮询窗口结束不代表运行失败。
 - GitHub 定时触发可能延迟数分钟；私有仓库长期无提交可能被暂停定时任务。
 - 若 Kaggle 端 Notebook 改为私有或 slug 变更，同步修改 `KERNEL_SLUG`。
+- 模型文件实际由 Kaggle Notebook 内部加载；本仓库的 `MODEL_FILE` 用于记录与拉取后的一致性提示。若 Notebook 中模型文件名变更，请同步修改该变量。
 - 参考：Kaggle CLI `kernels pull / push / status / logs / output`（`kaggle kernels --help`）。
